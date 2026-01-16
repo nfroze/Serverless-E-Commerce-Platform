@@ -12,6 +12,8 @@ All infrastructure is codified in Terraform using a modular structure that mirro
 
 ## Architecture
 
+![Cloud Architecture](screenshots/cloud-architecture.png)
+
 The request flow follows a clear path through the stack: users access the application via a CloudFront distribution that caches and serves the React build from S3. When the frontend needs product data, it calls the API Gateway endpoint which routes requests to the appropriate Lambda function based on HTTP method and path.
 
 Each Lambda function handles a single CRUD operation—this single-responsibility pattern keeps functions small, fast to cold-start, and independently deployable. The functions authenticate to DynamoDB using IAM roles with least-privilege policies scoped to specific table operations.
