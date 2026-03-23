@@ -1,64 +1,58 @@
-# Serverless E-Commerce Platform
+# 3 Tier Serverless Application
 
-A production-grade three-tier serverless architecture demonstrating how modern organisations build cost-efficient, infinitely scalable web applications without managing servers.
+A fully serverless e-commerce platform on AWS where every layer — presentation, logic, and data — is managed through Terraform, demonstrating how organisations can eliminate server management while maintaining a production-grade deployment workflow.
 
 ## Overview
 
-Traditional e-commerce platforms require significant infrastructure management—provisioning servers, configuring load balancers, and planning for traffic spikes. This project eliminates that operational overhead by implementing a fully serverless architecture where AWS handles all scaling automatically, and costs scale linearly with actual usage rather than anticipated capacity.
+Most teams adopting serverless still deploy manually through the AWS console or with ad-hoc scripts. This project takes a different approach: the entire three-tier architecture is codified in Terraform modules, making the infrastructure reproducible, auditable, and version-controlled. A single `terraform apply` provisions everything from the CDN to the database.
 
-The platform separates concerns across three distinct tiers: a React single-page application delivered globally via CloudFront CDN, a RESTful API layer powered by Lambda functions behind API Gateway, and a DynamoDB NoSQL database for persistent storage. Each tier scales independently, meaning a traffic spike hitting the API doesn't affect frontend delivery, and database read capacity automatically adjusts to demand.
+The application itself is a product catalogue with full CRUD functionality. A React frontend served through CloudFront and S3 communicates with a REST API built on API Gateway and five individual Lambda functions, each responsible for a single operation against a DynamoDB table. The separation keeps each function small, independently deployable, and easy to reason about.
 
-All infrastructure is codified in Terraform using a modular structure that mirrors the application architecture. This approach enables environment promotion (dev → staging → prod) through variable changes rather than manual configuration, while maintaining state in S3 for team collaboration.
+State is managed remotely in S3, IAM follows least-privilege with a dedicated Lambda execution role scoped to only the required DynamoDB actions and CloudWatch logging, and CORS is configured at the API Gateway level to allow the frontend origin.
 
 ## Architecture
 
-![Cloud Architecture](screenshots/cloud-architecture.png)
+![](screenshots/cloud-architecture.png)
 
-The request flow follows a clear path through the stack: users access the application via a CloudFront distribution that caches and serves the React build from S3. When the frontend needs product data, it calls the API Gateway endpoint which routes requests to the appropriate Lambda function based on HTTP method and path.
-
-Each Lambda function handles a single CRUD operation—this single-responsibility pattern keeps functions small, fast to cold-start, and independently deployable. The functions authenticate to DynamoDB using IAM roles with least-privilege policies scoped to specific table operations.
-
-The Terraform structure reflects this separation with dedicated modules for `database`, `backend`, and `frontend`. The root module orchestrates these components, passing outputs between modules (e.g., DynamoDB table ARN to the backend module for IAM policy creation). State is stored remotely in S3 to enable collaborative infrastructure management.
+Users hit a CloudFront distribution that serves the React SPA from an S3 bucket configured for static website hosting. The frontend calls a regional API Gateway REST API, which proxies each HTTP method (GET, POST, PUT, DELETE) to a dedicated Python Lambda function via AWS_PROXY integration. All five Lambdas share a single IAM role with policies scoped to DynamoDB CRUD operations and CloudWatch log writes. DynamoDB uses on-demand billing (PAY_PER_REQUEST) so there is no capacity planning required. Terraform remote state lives in a separate S3 bucket.
 
 ## Tech Stack
 
-**Infrastructure**: AWS Lambda, API Gateway (REST), DynamoDB, S3, CloudFront, IAM
+**Infrastructure**: AWS (CloudFront, S3, API Gateway, Lambda, DynamoDB, IAM, CloudWatch), Terraform with modular structure
 
-**IaC**: Terraform with modular structure, S3 remote state
+**Backend**: Python 3.9 Lambda functions, Boto3 SDK
 
-**Frontend**: React 18, Vite, React Router, localforage for cart persistence
+**Frontend**: React 18, Vite, React Router, LocalForage for client-side cart persistence
 
-**Backend**: Python 3.9 Lambda functions with boto3
-
-**Deployment**: PowerShell automation for S3 sync and CloudFront invalidation
+**State Management**: Terraform S3 backend for infrastructure state, useReducer pattern for frontend application state
 
 ## Key Decisions
 
-- **DynamoDB with PAY_PER_REQUEST billing**: Chose on-demand capacity mode to avoid provisioning decisions and enable true pay-per-use pricing—ideal for variable traffic patterns common in e-commerce.
+- **One Lambda per operation instead of a monolithic handler**: Each CRUD action (get_all, get_one, create, update, delete) is its own function. This keeps cold starts minimal, allows independent scaling, and makes IAM permissions easier to tighten in the future if operations need different access levels.
 
-- **Single-purpose Lambda functions over monolithic handler**: Each CRUD operation gets its own function, enabling independent scaling, isolated deployments, and faster cold starts compared to a single function routing internally.
+- **Terraform modules mirroring the three tiers**: The infrastructure is split into `database/`, `backend/`, and `frontend/` modules with explicit outputs passed between them (e.g., `module.database.table_arn` feeds into the backend module). This mirrors how platform teams would structure shared infrastructure in a real organisation.
 
-- **CloudFront with SPA error handling**: Configured 403/404 responses to return index.html with 200 status, enabling client-side routing without server-side route configuration.
+- **DynamoDB PAY_PER_REQUEST billing**: Avoids provisioned throughput capacity planning entirely. For a product catalogue with unpredictable traffic, on-demand billing eliminates the risk of throttling while keeping costs at zero during idle periods.
 
-- **Modular Terraform with explicit dependencies**: Structured infrastructure as composable modules with outputs passed between them, making the architecture self-documenting and enabling selective applies during development.
+- **CloudFront in front of S3 rather than direct S3 website hosting**: Adds HTTPS by default, caching at edge locations, and custom error responses that redirect 404/403 to `index.html` for client-side routing support.
 
 ## Screenshots
 
-![Application frontend](screenshots/frontend-products.png)
+![](screenshots/frontend-products.png)
 
-![API Gateway endpoints](screenshots/api-gateway-console.png)
+![](screenshots/terraform-apply.png)
 
-![Lambda functions](screenshots/lambda-functions.png)
+![](screenshots/api-gateway-console.png)
 
-![DynamoDB table](screenshots/dynamodb-table.png)
+![](screenshots/lambda-functions.png)
 
-![CloudFront distribution](screenshots/cloudfront-distribution.png)
+![](screenshots/dynamodb-table.png)
 
-![S3 bucket hosting](screenshots/s3-bucket.png)
+![](screenshots/s3-bucket.png)
 
-![Terraform deployment](screenshots/terraform-apply.png)
+![](screenshots/cloudfront-distribution.png)
 
-![Git workflow](screenshots/feature-branches.png)
+![](screenshots/feature-branches.png)
 
 ## Author
 
