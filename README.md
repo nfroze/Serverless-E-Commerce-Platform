@@ -38,19 +38,35 @@ Users hit a CloudFront distribution that serves the React SPA from an S3 bucket 
 
 ## Screenshots
 
+**React Product Catalog Frontend** — The live e-commerce interface displaying the product catalogue with a promotional banner, category navigation, and product cards featuring headphones with prices and "Add to Cart" buttons. The frontend is served via CloudFront and S3 static hosting with client-side routing powered by React Router.
+
 ![](screenshots/frontend-products.png)
+
+**Terraform Deployment Output** — The successful completion of a `terraform apply` operation, showing zero changes needed because infrastructure already matches the configuration. The output displays key deployment endpoints including the API Gateway URL, CloudFront distribution ID, and frontend URL—demonstrating the fully codified infrastructure approach.
 
 ![](screenshots/terraform-apply.png)
 
+**API Gateway REST API Console** — AWS API Gateway interface showing the serverless REST API resources with /products endpoint and HTTP methods (GET, POST, PUT, DELETE) configured with Lambda proxy integration, controlling how the frontend communicates with backend functions.
+
 ![](screenshots/api-gateway-console.png)
+
+**Lambda Functions Overview** — AWS Lambda console listing all five individual serverless functions (create, delete, get_all, get_one, update) deployed for each CRUD operation, each independently scalable and responsible for a single database operation.
 
 ![](screenshots/lambda-functions.png)
 
+**DynamoDB Products Table** — AWS DynamoDB console showing the serverless-products-dev table configured with on-demand billing (PAY_PER_REQUEST), eliminating the need for capacity planning and providing automatic scaling based on traffic.
+
 ![](screenshots/dynamodb-table.png)
+
+**S3 Frontend Bucket** — AWS S3 console displaying the serverless-3tier-frontend-dev bucket containing the built React application files, configured for static website hosting with CloudFront as the CDN layer in front.
 
 ![](screenshots/s3-bucket.png)
 
+**CloudFront Distribution Configuration** — AWS CloudFront console showing the CDN distribution details with S3 origin configuration, caching behaviors, and settings that provide HTTPS encryption, geographic distribution, and custom error handling for client-side routing.
+
 ![](screenshots/cloudfront-distribution.png)
+
+**GitHub Feature Branches and Pull Requests** — GitHub repository interface displaying open pull requests with descriptive titles covering infrastructure, configuration, and testing improvements—demonstrating version control and code review practices for the DevSecOps workflow.
 
 ![](screenshots/feature-branches.png)
 
