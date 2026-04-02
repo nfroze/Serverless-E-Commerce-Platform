@@ -44,7 +44,7 @@ Users hit a CloudFront distribution that serves the React SPA from an S3 bucket 
 
 **Terraform Deployment Output** — The successful completion of a `terraform apply` operation, showing zero changes needed because infrastructure already matches the configuration. The output displays key deployment endpoints including the API Gateway URL, CloudFront distribution ID, and frontend URL—demonstrating the fully codified infrastructure approach.
 
-![](screenshots/terraform-apply.png)
+![](screenshots/terraform-output.png)
 
 **API Gateway REST API Console** — AWS API Gateway interface showing the serverless REST API resources with /products endpoint and HTTP methods (GET, POST, PUT, DELETE) configured with Lambda proxy integration, controlling how the frontend communicates with backend functions.
 
